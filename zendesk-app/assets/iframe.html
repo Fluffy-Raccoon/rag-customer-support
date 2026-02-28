@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/@zendeskgarden/css-bedrock@2.0.5,npm/@zendeskgarden/css-utilities@4.3.0">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 12px; font-size: 13px; }
+    #generate-btn { width: 100%; padding: 10px; background: #1f73b7; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+    #generate-btn:hover { background: #144a75; }
+    #generate-btn:disabled { background: #ccc; cursor: not-allowed; }
+    #result { margin-top: 12px; display: none; }
+    #draft { background: #f8f9f9; padding: 10px; border-radius: 4px; border: 1px solid #d8dcde; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+    #citations { margin-top: 8px; font-size: 12px; color: #68737d; }
+    #escalation { margin-top: 8px; padding: 6px; border-radius: 4px; font-weight: bold; }
+    .escalate { background: #fff0f1; color: #cc3340; }
+    .no-escalate { background: #edf8f4; color: #038153; }
+    #error { margin-top: 12px; color: #cc3340; display: none; }
+    #loading { margin-top: 12px; text-align: center; display: none; }
+    #meta { margin-top: 8px; font-size: 11px; color: #87929d; }
+  </style>
+</head>
+<body>
+  <button id="generate-btn">Generate Draft Response</button>
+  <div id="loading">Generating draft...</div>
+  <div id="error"></div>
+  <div id="result">
+    <div id="draft"></div>
+    <div id="citations"></div>
+    <div id="escalation"></div>
+    <div id="meta"></div>
+  </div>
+
+  <script type="text/javascript" src="https://static.zdassets.com/zendesk_app_framework_sdk/2.0/zaf_sdk.min.js"></script>
+  <script type="text/javascript" src="src/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+.venv
+__pycache__
+*.pyc
+.env
+.git
+.gitignore
+tests/
+scripts/
+zendesk-app/
+docs/
+*.md
+.claude/

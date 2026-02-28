@@ -1,0 +1,8 @@
+{
+  "app": {
+    "name": "RAG Draft Generator",
+    "short_description": "Generate AI-drafted responses for support tickets",
+    "long_description": "Uses a RAG pipeline to generate draft responses based on company documentation and historical support interactions. Drafts include source citations and escalation recommendations.",
+    "installation_instructions": "Set the API_BASE_URL in src/app.js to point to your FastAPI server."
+  }
+}
