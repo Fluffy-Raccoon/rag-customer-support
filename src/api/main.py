@@ -44,8 +44,8 @@ app = FastAPI(
 def verify_api_key(x_api_key: str | None = Header(None)):
     """Verify API key if configured. Skipped when api_key setting is None."""
     configured_key = get_settings().api_key
-    if configured_key is None:
-        return  # Auth disabled
+    if not configured_key:
+        return  # Auth disabled (None or empty string)
     if x_api_key != configured_key:
         raise HTTPException(status_code=401, detail="Invalid or missing API key")
 

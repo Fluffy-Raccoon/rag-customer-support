@@ -102,20 +102,20 @@ All settings are managed via environment variables (`.env` file). Required setti
 
 ### Optional
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `API_KEY` | *(disabled)* | When set, all endpoints require `X-API-Key` header |
-| `ZENDESK_SUBDOMAIN` | *(disabled)* | Zendesk subdomain (e.g. `mycompany`) |
-| `ZENDESK_EMAIL` | *(disabled)* | Zendesk agent email for API auth |
-| `ZENDESK_API_TOKEN` | *(disabled)* | Zendesk API token |
-| `IMAP_SERVER` | *(disabled)* | IMAP server hostname |
-| `IMAP_USER` | *(disabled)* | IMAP login user |
-| `IMAP_PASSWORD` | *(disabled)* | IMAP password |
-| `IMAP_TRIGGER_FOLDER` | `Generate Draft` | IMAP folder to monitor |
-| `LOG_LEVEL` | `INFO` | Logging level |
-| `CHUNK_SIZE` | `512` | Tokens per chunk |
-| `CHUNK_OVERLAP` | `50` | Token overlap between chunks |
-| `RETRIEVAL_TOP_K` | `10` | Documents retrieved per query |
+| Variable              | Default          | Description                                        |
+| --------------------- | ---------------- | -------------------------------------------------- |
+| `API_KEY`             | *(disabled)*     | When set, all endpoints require `X-API-Key` header |
+| `ZENDESK_SUBDOMAIN`   | *(disabled)*     | Zendesk subdomain (e.g. `mycompany`)               |
+| `ZENDESK_EMAIL`       | *(disabled)*     | Zendesk agent email for API auth                   |
+| `ZENDESK_API_TOKEN`   | *(disabled)*     | Zendesk API token                                  |
+| `IMAP_SERVER`         | *(disabled)*     | IMAP server hostname                               |
+| `IMAP_USER`           | *(disabled)*     | IMAP login user                                    |
+| `IMAP_PASSWORD`       | *(disabled)*     | IMAP password                                      |
+| `IMAP_TRIGGER_FOLDER` | `Generate Draft` | IMAP folder to monitor                             |
+| `LOG_LEVEL`           | `INFO`           | Logging level                                      |
+| `CHUNK_SIZE`          | `512`            | Tokens per chunk                                   |
+| `CHUNK_OVERLAP`       | `50`             | Token overlap between chunks                       |
+| `RETRIEVAL_TOP_K`     | `10`             | Documents retrieved per query                      |
 
 ---
 
