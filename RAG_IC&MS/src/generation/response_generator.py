@@ -1,6 +1,6 @@
 import logging
 
-from openai import OpenAI
+import anthropic
 
 from config import get_settings
 from src.generation.complexity_analyzer import analyze_complexity
@@ -44,8 +44,8 @@ COMPLEXITY_GUIDANCE = {
 }
 
 
-def process_customer_query(query_text: str) -> dict:
-    """Full query pipeline: detect language → analyze complexity → embed → retrieve → generate → format."""
+def _run_pipeline(query_text: str) -> dict:
+    """Run the full query pipeline and return all intermediate results."""
     settings = get_settings()
 
     # 1. Detect language
@@ -71,13 +71,23 @@ def process_customer_query(query_text: str) -> dict:
     # 6. Build context
     context = _build_context(results)
 
-    # 7. Generate response
+    # 7. Build the full prompt
+    lang_name = LANGUAGE_NAMES.get(detected_lang, "English")
+    guidance = COMPLEXITY_GUIDANCE.get(complexity, COMPLEXITY_GUIDANCE["moderate"])
+    full_prompt = RESPONSE_PROMPT.format(
+        detected_language=lang_name,
+        complexity_guidance=guidance,
+        context=context,
+        query=query_text,
+    )
+
+    # 8. Generate response
     draft = _generate_response(query_text, context, detected_lang, complexity, settings)
 
-    # 8. Check escalation
+    # 9. Check escalation
     escalation = check_escalation_need(query_text, context, draft)
 
-    # 9. Format citations
+    # 10. Format citations
     citations = _extract_citations(results)
 
     return {
@@ -86,6 +96,60 @@ def process_customer_query(query_text: str) -> dict:
         "escalation": escalation,
         "detected_language": detected_lang,
         "complexity": complexity,
+        "raw_results": raw_results,
+        "reranked_results": results,
+        "context": context,
+        "full_prompt": full_prompt,
+        "settings_used": {
+            "retrieval_top_k": settings.retrieval_top_k,
+            "anthropic_chat_model": settings.anthropic_chat_model,
+            "openai_embedding_model": settings.openai_embedding_model,
+            "chunk_size": settings.chunk_size,
+            "chunk_overlap": settings.chunk_overlap,
+        },
+    }
+
+
+def process_customer_query(query_text: str) -> dict:
+    """Full query pipeline: detect language → analyze complexity → embed → retrieve → generate → format."""
+    result = _run_pipeline(query_text)
+    return {
+        "draft": result["draft"],
+        "citations": result["citations"],
+        "escalation": result["escalation"],
+        "detected_language": result["detected_language"],
+        "complexity": result["complexity"],
+    }
+
+
+def process_customer_query_debug(query_text: str) -> dict:
+    """Same pipeline as process_customer_query but returns all intermediate results for debugging."""
+    result = _run_pipeline(query_text)
+    return {
+        "draft": result["draft"],
+        "citations": result["citations"],
+        "escalation": result["escalation"],
+        "detected_language": result["detected_language"],
+        "complexity": result["complexity"],
+        "debug": {
+            "raw_results": [
+                {"id": r.id, "score": r.score,
+                 "source": r.metadata.get("source_file", ""),
+                 "section": r.metadata.get("section", ""),
+                 "text": r.text}
+                for r in result["raw_results"]
+            ],
+            "reranked_results": [
+                {"id": r.id, "score": r.score,
+                 "source": r.metadata.get("source_file", ""),
+                 "section": r.metadata.get("section", ""),
+                 "text": r.text}
+                for r in result["reranked_results"]
+            ],
+            "context_sent_to_llm": result["context"],
+            "full_prompt": result["full_prompt"],
+            "settings_used": result["settings_used"],
+        },
     }
 
 
@@ -110,8 +174,8 @@ def _generate_response(
     complexity: str,
     settings,
 ) -> str:
-    """Call the LLM to generate a draft response."""
-    client = OpenAI(api_key=settings.openai_api_key)
+    """Call Claude to generate a draft response."""
+    client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
     lang_name = LANGUAGE_NAMES.get(detected_lang, "English")
     guidance = COMPLEXITY_GUIDANCE.get(complexity, COMPLEXITY_GUIDANCE["moderate"])
 
@@ -122,14 +186,14 @@ def _generate_response(
         query=query_text,
     )
 
-    response = client.chat.completions.create(
-        model=settings.openai_chat_model,
+    response = client.messages.create(
+        model=settings.anthropic_chat_model,
         messages=[{"role": "user", "content": prompt}],
         temperature=0.3,
         max_tokens=2000,
     )
 
-    return response.choices[0].message.content.strip()
+    return response.content[0].text.strip()
 
 
 def _extract_citations(results: list[SearchResult]) -> list[str]:

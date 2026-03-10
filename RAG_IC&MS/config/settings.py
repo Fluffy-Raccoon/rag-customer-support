@@ -10,10 +10,13 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    # OpenAI
+    # OpenAI (used for embeddings)
     openai_api_key: str
     openai_embedding_model: str = "text-embedding-3-large"
-    openai_chat_model: str = "gpt-4-turbo"
+
+    # Anthropic (used for response generation)
+    anthropic_api_key: str
+    anthropic_chat_model: str = "claude-sonnet-4-20250514"
 
     # Pinecone
     pinecone_api_key: str

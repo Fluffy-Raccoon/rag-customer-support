@@ -40,5 +40,8 @@ data/.indexed_versions.json
 !data/*.docx
 !data/*.pdf
 
+# Test data with real customer emails
+test_data_tyrex_support/
+
 # Poetry
 poetry.lock

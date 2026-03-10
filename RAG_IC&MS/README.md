@@ -8,7 +8,8 @@ A Retrieval-Augmented Generation system that drafts customer support responses f
 
 - Python 3.11+
 - [Poetry](https://python-poetry.org/) (`pip install poetry`)
-- OpenAI API key
+- OpenAI API key (embeddings)
+- Anthropic API key (response generation)
 - Pinecone API key + index
 
 ### Setup
@@ -65,7 +66,7 @@ PDF/DOCX/Email/CSV         Customer Query              Agent approves draft
         │                        │                      (1.3x weight)
    Upsert to Pinecone     Rerank + Build Context
                                  │
-                           Generate Draft (GPT-4)
+                           Generate Draft (Claude)
                                  │
                            Citations + Escalation Check
                                  │
@@ -94,28 +95,29 @@ All settings are managed via environment variables (`.env` file). Required setti
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `OPENAI_API_KEY` | — | OpenAI API key |
+| `OPENAI_API_KEY` | — | OpenAI API key (used for embeddings) |
+| `ANTHROPIC_API_KEY` | — | Anthropic API key (used for response generation) |
 | `PINECONE_API_KEY` | — | Pinecone API key |
 | `PINECONE_INDEX_NAME` | `customer-support-rag` | Pinecone index (3072-dim, cosine) |
 | `OPENAI_EMBEDDING_MODEL` | `text-embedding-3-large` | Embedding model |
-| `OPENAI_CHAT_MODEL` | `gpt-4-turbo` | Chat completion model |
+| `ANTHROPIC_CHAT_MODEL` | `claude-sonnet-4-20250514` | Chat model for response generation |
 
 ### Optional
 
-| Variable              | Default          | Description                                        |
-| --------------------- | ---------------- | -------------------------------------------------- |
-| `API_KEY`             | *(disabled)*     | When set, all endpoints require `X-API-Key` header |
-| `ZENDESK_SUBDOMAIN`   | *(disabled)*     | Zendesk subdomain (e.g. `mycompany`)               |
-| `ZENDESK_EMAIL`       | *(disabled)*     | Zendesk agent email for API auth                   |
-| `ZENDESK_API_TOKEN`   | *(disabled)*     | Zendesk API token                                  |
-| `IMAP_SERVER`         | *(disabled)*     | IMAP server hostname                               |
-| `IMAP_USER`           | *(disabled)*     | IMAP login user                                    |
-| `IMAP_PASSWORD`       | *(disabled)*     | IMAP password                                      |
-| `IMAP_TRIGGER_FOLDER` | `Generate Draft` | IMAP folder to monitor                             |
-| `LOG_LEVEL`           | `INFO`           | Logging level                                      |
-| `CHUNK_SIZE`          | `512`            | Tokens per chunk                                   |
-| `CHUNK_OVERLAP`       | `50`             | Token overlap between chunks                       |
-| `RETRIEVAL_TOP_K`     | `10`             | Documents retrieved per query                      |
+| Variable                  | Default          | Description                                        |
+| ------------------------- | ---------------- | -------------------------------------------------- |
+| `API_KEY`                 | *(disabled)*     | When set, all endpoints require `X-API-Key` header |
+| `ZENDESK_SUBDOMAIN`       | *(disabled)*     | Zendesk subdomain (e.g. `mycompany`)               |
+| `ZENDESK_EMAIL`           | *(disabled)*     | Zendesk agent email for API auth                   |
+| `ZENDESK_API_TOKEN`       | *(disabled)*     | Zendesk API token                                  |
+| `IMAP_SERVER`             | *(disabled)*     | IMAP server hostname                               |
+| `IMAP_USER`               | *(disabled)*     | IMAP login user                                    |
+| `IMAP_PASSWORD`           | *(disabled)*     | IMAP password                                      |
+| [[`IMAP_TRIGGER_FOLDER`]] | `Generate Draft` | IMAP folder to monitor                             |
+| `LOG_LEVEL`               | `INFO`           | Logging level                                      |
+| `CHUNK_SIZE`              | `512`            | Tokens per chunk                                   |
+| `CHUNK_OVERLAP`           | `50`             | Token overlap between chunks                       |
+| `RETRIEVAL_TOP_K`         | `10`             | Documents retrieved per query                      |
 
 ---
 
@@ -186,6 +188,26 @@ All mutation endpoints support optional API key authentication via the `X-API-Ke
   "complexity": "brief"
 }
 ```
+
+---
+
+## Testing & Debugging UI
+
+A Streamlit-based testing interface for running queries, inspecting all pipeline stages, and calibrating RAG behavior:
+
+```bash
+# Launch the test UI (opens in browser)
+streamlit run tools/test_ui.py
+```
+
+Features:
+
+- Text area for queries (no JSON escaping needed)
+- **Draft Response** tab — rendered draft + citations
+- **Retrieval Debug** tab — sortable tables of raw vs reranked chunks with scores
+- **Context & Prompt** tab — see the exact prompt sent to Claude
+- **Pipeline Metadata** tab — language, complexity, escalation, settings
+- Query history with JSON export
 
 ---
 
@@ -300,6 +322,7 @@ python3 -m pytest tests/ --cov=src
 | `test_audit.py` | Audit logging, retrieval |
 | `test_chunker.py` | Text chunking, metadata |
 | `test_parsers.py` | Document parsers (CSV) |
+| `test_email_parser_real.py` | Email parser against real `.eml` test data |
 | `test_response_generator.py` | RAG pipeline, prompts, citations |
 | `test_language_detector.py` | EN/DE/FR detection, OpenAI fallback |
 | `test_complexity_analyzer.py` | Query complexity classification |
@@ -337,6 +360,8 @@ python3 -m pytest tests/ --cov=src
 │   └── audit/
 │       └── logger.py            # Structured query audit logging
 ├── scripts/                     # CLI tools (query, reindex, monitor)
+├── tools/
+│   └── test_ui.py              # Streamlit testing UI for RAG calibration
 ├── zendesk-app/                 # Zendesk sidebar widget
 ├── tests/                       # 83 unit tests
 ├── data/                        # Documents + persistent data files
