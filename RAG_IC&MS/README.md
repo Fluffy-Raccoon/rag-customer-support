@@ -15,8 +15,11 @@ A Retrieval-Augmented Generation system that drafts customer support responses f
 ### Setup
 
 ```bash
+# Install Poetry (if not already installed)
+pip3 install poetry
+
 # Install dependencies
-poetry install
+python3 -m poetry install
 
 # Copy and fill in environment variables
 cp .env.example .env
@@ -26,8 +29,10 @@ cp .env.example .env
 python3 -m pytest tests/ -v
 
 # Start the server
-poetry run uvicorn src.api.main:app --reload
+python3 -m uvicorn src.api.main:app --reload
 ```
+
+> **Tip:** If `poetry` or other CLI tools give "command not found" after install, use `python3 -m <tool>` instead (e.g., `python3 -m poetry install`). This bypasses PATH issues.
 
 The API is now available at `http://localhost:8000`. Interactive docs at `/docs`.
 
@@ -197,8 +202,10 @@ A Streamlit-based testing interface for running queries, inspecting all pipeline
 
 ```bash
 # Launch the test UI (opens in browser)
-streamlit run tools/test_ui.py
+python3 -m streamlit run tools/test_ui.py
 ```
+
+> **Note:** If `streamlit` is installed but `streamlit run` gives "command not found", use `python3 -m streamlit run` instead. This happens when the `streamlit` binary isn't on your shell PATH.
 
 Features:
 
